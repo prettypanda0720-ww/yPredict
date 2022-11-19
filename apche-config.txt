@@ -1,0 +1,59 @@
+# cd /Applications/work/ravantech/certificates
+# ssh -i "screener-dev-env.pem" ubuntu@ec2-65-2-115-144.ap-south-1.compute.amazonaws.com
+cd /etc/apache2/sites-available/
+sudo vim ypredict.ai-le-ssl.conf
+
+
+
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+    ServerName  ypredict.ai
+    DocumentRoot /var/www/html/ypredict.ai/
+
+ <Directory /var/www/html/ypredict.ai/dapp/>
+        #Options -Indexes +FollowSymLinks
+        #AllowOverride All
+
+        Options -MultiViews
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteRule ^ index.html [QSA,L]
+
+</Directory>
+
+#....
+
+----------------------
+
+password protecting....
+
+   <Directory "/var/www/html/ypredict.ai/">
+
+      # set an environment variable "noauth" if the request starts with "/callbacks/"
+      #SetEnvIf Request_URI ^/app/ noauth=1
+      SetEnvIf Request_URI https://ypredict.ai/data-entry.html auth=1
+      AuthType Basic
+      AuthName "Restricted Content"
+      AuthUserFile /etc/apache2/.htpasswd
+      Require valid-user
+
+    <RequireAll>
+        Require expr %{REQUEST_URI} !~ m#^\/data-entry.html#
+        Require expr %{REQUEST_URI} !~ m#^\/dapp/#
+        #Require user dataentry
+    </RequireAll>
+
+
+
+  </Directory>
+
+
+----------------------
+
+dataentry
+dataentryadmin
+
+----------------------
+
+sudo apache2ctl configtest
+sudo systemctl restart apache2
